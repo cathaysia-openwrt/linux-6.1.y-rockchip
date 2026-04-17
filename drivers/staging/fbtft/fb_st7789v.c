@@ -261,6 +261,31 @@ static int write_vmem(struct fbtft_par *par, size_t offset, size_t len)
 	return ret;
 }
 
+static void set_addr_win(struct fbtft_par *par, int xs, int ys, int xe, int ye)
+{
+	struct device *dev = par->info->device;
+	u32 x_offset = 0;
+	u32 y_offset = 0;
+
+	device_property_read_u32(dev, "x-offset", &x_offset);
+	device_property_read_u32(dev, "y-offset", &y_offset);
+
+	xs += x_offset;
+	xe += x_offset;
+	ys += y_offset;
+	ye += y_offset;
+
+	write_reg(par, MIPI_DCS_SET_COLUMN_ADDRESS,
+		  (xs >> 8) & 0xFF, xs & 0xFF,
+		  (xe >> 8) & 0xFF, xe & 0xFF);
+
+	write_reg(par, MIPI_DCS_SET_PAGE_ADDRESS,
+		  (ys >> 8) & 0xFF, ys & 0xFF,
+		  (ye >> 8) & 0xFF, ye & 0xFF);
+
+	write_reg(par, MIPI_DCS_WRITE_MEMORY_START);
+}
+
 /**
  * set_var() - apply LCD properties like rotation and BGR mode
  *
@@ -375,6 +400,7 @@ static struct fbtft_display display = {
 	.gamma = HSD20_IPS_GAMMA,
 	.fbtftops = {
 		.init_display = init_display,
+		.set_addr_win = set_addr_win,
 		.write_vmem = write_vmem,
 		.set_var = set_var,
 		.set_gamma = set_gamma,
