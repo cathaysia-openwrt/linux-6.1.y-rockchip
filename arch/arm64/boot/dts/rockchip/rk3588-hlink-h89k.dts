@@ -1,0 +1,99 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+// Copyright (c) 2023 Flippy <flippy@sina.com>
+
+/dts-v1/;
+#include <dt-bindings/clock/rk3588-cru.h>
+#include <dt-bindings/gpio/gpio.h>
+
+#include "rk3588-hlink.dtsi"
+
+/ {
+	model = "Hlink H88K";
+	compatible = "hlink,h88k", "rockchip,rk3588";
+
+	aliases {
+		ethernet1 = &rtl8125_1;
+		ethernet2 = &rtl8125_2;
+	};
+
+	vcc3v3_m2_sata: vcc3v3-m2-sata {
+		compatible = "regulator-fixed";
+		regulator-name = "vcc3v3_m2_sata";
+		regulator-min-microvolt = <3300000>;
+		regulator-max-microvolt = <3300000>;
+		regulator-always-on;
+		regulator-boot-on;
+		enable-active-high;
+		gpios = <&gpio4 RK_PA4 GPIO_ACTIVE_HIGH>;
+		vin-supply = <&vcc12v_dcin>;
+	};
+};
+
+&vcc_mipidcphy0 {
+	status = "disabled";
+};
+
+&sata0 {
+	status = "disabled";
+};
+
+&spi4 {
+	assigned-clocks = <&cru CLK_SPI4>;
+	assigned-clock-rates = <200000000>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi4m2_pins &spi4m2_cs0>;
+	num-cs = <1>;
+	status = "okay";
+
+	panel@0 {
+		compatible = "sitronix,st7789v";
+		reg = <0>;
+		dc-gpios = <&gpio1 RK_PA4 GPIO_ACTIVE_HIGH>;
+		spi-max-frequency = <1000000>;
+		width = <135>;
+		height = <240>;
+		buswidth = <8>;
+		rotate = <90>;
+		x-offset = <40>;
+		y-offset = <52>;
+		spi-cpol;
+		spi-cpha;
+	};
+};
+
+&pcie2x1l2 {
+	reset-gpios = <&gpio4 RK_PA5 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+
+	pcie@0,0 {
+		reg = <0x000000 0 0 0 0>;
+		#address-cells = <3>;
+		#size-cells = <2>;
+
+		bus-range = <0x40 0x4f>;
+		device_type = "pci";
+		ranges;
+
+		rtl8125_2: pcie-eth@0,0 {
+			compatible = "pci10ec,8125";
+			label = "eth2";
+			reg = <0x000000 0 0 0 0>;
+
+			r8125,led2 = <0x0200>;
+			r8125,led3 = <0x002a>;
+		};
+	};
+};
+
+&combphy0_ps {
+	status = "okay";
+	pinctrl-0 = <&sata0_pm_reset>;
+};
+
+&pinctrl {
+	sata {
+		sata0_pm_reset: sata0-pm-reset {
+			rockchip,pins = <4 RK_PA0 RK_FUNC_GPIO &pcfg_output_high>;
+		};
+	};
+};
