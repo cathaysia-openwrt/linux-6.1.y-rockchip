@@ -562,6 +562,12 @@ dtb-$(CONFIG_ARCH_ROCKCHIP) += rv1126bp-evb-v14-dual-cam.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rv1126bp-evb1-v12.dtb
 dtb-$(CONFIG_ARCH_ROCKCHIP) += rv1126bp-evb1-v12-fastboot-emmc.dtb
 
+dtb-$(CONFIG_ARCH_ROCKCHIP) := $(filter \
+	rk3528-hlink-h29k.dtb \
+	rk3588-hlink-h88k.dtb \
+	rk3588-hlink-h89k.dtb, \
+	$(dtb-$(CONFIG_ARCH_ROCKCHIP)))
+
 subdir-y := $(dts-dirs) overlay
 
 # Armbian: Incremental: assuming overlay targets are already in the Makefile
